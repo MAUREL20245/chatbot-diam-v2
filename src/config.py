@@ -11,7 +11,7 @@ CONFIG = {
     "local_model": "llama3.2:3b",
 
     # Modèle cloud (Groq)
-    "cloud_model": "llama-3.1-8b-instant",
+    "cloud_model": "mixtral-8x7b-32768",
 
     # Clé API Groq
     "groq_api_key": os.getenv("GROQ_API_KEY"),
