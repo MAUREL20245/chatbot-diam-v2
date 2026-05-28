@@ -12,4 +12,5 @@ langchain-core
 chromadb
 pypdf
 duckduckgo-search
-ddgs
+ddgsgroq
+python-dotenv
