@@ -10,12 +10,12 @@ st.set_page_config(
     layout="centered"
 )
 
-st.title("📚 Chatbot RAG Local")
-st.caption("Pose des questions sur tes propres documents — Propulsé par Ollama + ChromaDB")
+st.title(" Chatbot RAG — Club D.I.A.M")
+st.caption("Pose des questions sur vos propres documents — Propulsé par Groq + Pinecone")
 
 # ── Initialisation ────────────────────────────────────────────────
 if "rag" not in st.session_state:
-    st.session_state.rag = RAGSystem(model="llama3.2:3b")
+    st.session_state.rag = RAGSystem()
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -48,7 +48,7 @@ with st.sidebar:
 
                 st.session_state.indexed_files.append(uploaded_file.name)
 
-            st.success(f"✅ {uploaded_file.name} indexé ({nb_chunks} chunks)")
+            st.success(f"{uploaded_file.name} indexé ({nb_chunks} chunks)")
 
     # Liste des documents indexés
     if st.session_state.indexed_files:

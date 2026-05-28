@@ -15,3 +15,8 @@ duckduckgo-search
 ddgs
 groq
 python-dotenv
+sentence-transformers
+pinecone-client
+langchain-huggingface
+langchain-pinecone
+torchvision
