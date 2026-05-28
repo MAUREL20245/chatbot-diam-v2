@@ -1,37 +1,48 @@
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
 from langchain_pinecone import PineconeVectorStore
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.runnables import RunnablePassthrough
-from langchain_core.output_parsers import StrOutputParser
+from langchain_core.embeddings import Embeddings
 from groq import Groq
+from pinecone import Pinecone
 from src.config import CONFIG
 import os
 
 INDEX_NAME = "chatbot-diam"
 
 
-class RAGSystem:
-    def __init__(self, model: str = CONFIG["model"]):
-        self.model = model
+class PineconeInferenceEmbeddings(Embeddings):
+    """Embeddings via l'API d'inférence Pinecone — pas de modèle local"""
 
-        # Embeddings via HuggingFace (sentence-transformers)
-        self.embeddings = HuggingFaceEmbeddings(
-            model_name="all-MiniLM-L6-v2"
+    def __init__(self):
+        self.pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
+        self.model = "multilingual-e5-large"
+
+    def embed_documents(self, texts: list[str]) -> list[list[float]]:
+        result = self.pc.inference.embed(
+            model=self.model,
+            inputs=texts,
+            parameters={"input_type": "passage"}
         )
+        return [item["values"] for item in result]
 
-        # Client Groq pour la génération
+    def embed_query(self, text: str) -> list[float]:
+        result = self.pc.inference.embed(
+            model=self.model,
+            inputs=[text],
+            parameters={"input_type": "query"}
+        )
+        return result[0]["values"]
+
+
+class RAGSystem:
+    def __init__(self):
+        self.embeddings = PineconeInferenceEmbeddings()
         self.groq_client = Groq(api_key=CONFIG["groq_api_key"])
-
-        # Pinecone vectorstore
         self.vectorstore = None
         self._init_pinecone()
 
     def _init_pinecone(self):
-        """Initialiser la connexion Pinecone"""
         try:
-            from pinecone import Pinecone
             pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
             index = pc.Index(INDEX_NAME)
             self.vectorstore = PineconeVectorStore(
@@ -53,76 +64,45 @@ class RAGSystem:
 
     def index_document(self, file_path: str) -> int:
         documents = self.load_document(file_path)
-
         splitter = RecursiveCharacterTextSplitter(
             chunk_size=CONFIG["chunk_size"],
             chunk_overlap=CONFIG["chunk_overlap"]
         )
         chunks = splitter.split_documents(documents)
-
-        # Indexer dans Pinecone
-        from pinecone import Pinecone
-        pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
-        index = pc.Index(INDEX_NAME)
-
         self.vectorstore = PineconeVectorStore.from_documents(
             documents=chunks,
             embedding=self.embeddings,
             index_name=INDEX_NAME
         )
-
         return len(chunks)
 
     def ask(self, question: str) -> dict:
         if self.vectorstore is None:
-            return {
-                "answer": "Aucun document indexé.",
-                "sources": []
-            }
+            return {"answer": "Aucun document indexé.", "sources": []}
 
-        # Récupérer les chunks similaires
         retriever = self.vectorstore.as_retriever(
             search_kwargs={"k": CONFIG["k"]}
         )
         source_docs = retriever.invoke(question)
-
-        # Construire le contexte
         context = "\n\n".join(doc.page_content for doc in source_docs)
 
-        # Générer la réponse via Groq
         response = self.groq_client.chat.completions.create(
-            model=self.model,
+            model=CONFIG["model"],
             messages=[
-                {
-                    "role": "system",
-                    "content": "Tu réponds aux questions en te basant uniquement sur le contexte fourni. Si la réponse n'est pas dans le contexte, dis-le clairement."
-                },
-                {
-                    "role": "user",
-                    "content": f"Contexte:\n{context}\n\nQuestion: {question}"
-                }
+                {"role": "system", "content": "Tu réponds uniquement en te basant sur le contexte fourni."},
+                {"role": "user", "content": f"Contexte:\n{context}\n\nQuestion: {question}"}
             ]
         )
 
         answer = response.choices[0].message.content
+        sources = list(set([
+            os.path.basename(doc.metadata.get("source", "inconnu"))
+            for doc in source_docs
+        ]))
 
-        sources = []
-        for doc in source_docs:
-            source = doc.metadata.get("source", "inconnu")
-            page = doc.metadata.get("page", "")
-            sources.append(
-                f"{os.path.basename(source)}" +
-                (f" (page {page+1})" if page != "" else "")
-            )
-
-        return {
-            "answer": answer,
-            "sources": list(set(sources))
-        }
+        return {"answer": answer, "sources": sources}
 
     def reset(self):
-        """Vider l'index Pinecone"""
-        from pinecone import Pinecone
         pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
         index = pc.Index(INDEX_NAME)
         index.delete(delete_all=True)
