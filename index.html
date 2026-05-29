@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Aristide Maurel — Data Scientist & MLOps Engineer</title>
+<title>Aristide Maurel — Data Scientist & MLOps Engineer & AI Engineer</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   
@@ -27,7 +27,6 @@
     line-height: 1.6;
   }
 
-  /* NAV */
   nav {
     position: fixed;
     top: 0; left: 0; right: 0;
@@ -64,7 +63,6 @@
 
   .nav-links a:hover { color: var(--primary); }
 
-  /* HERO */
   .hero {
     min-height: 100vh;
     display: flex;
@@ -186,9 +184,7 @@
     flex-wrap: wrap;
   }
 
-  .stat {
-    text-align: center;
-  }
+  .stat { text-align: center; }
 
   .stat-number {
     font-size: 2rem;
@@ -202,7 +198,6 @@
     color: var(--text-muted);
   }
 
-  /* SECTIONS */
   section {
     padding: 6rem 2rem;
     max-width: 1100px;
@@ -235,7 +230,6 @@
     margin-bottom: 3rem;
   }
 
-  /* ABOUT */
   .about-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -278,7 +272,6 @@
     color: var(--text-muted);
   }
 
-  /* SKILLS */
   .skills-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -337,7 +330,6 @@
     border: 1px solid var(--border);
   }
 
-  /* PROJECTS */
   .projects-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
@@ -380,9 +372,7 @@
     color: var(--text-muted);
   }
 
-  .project-body {
-    padding: 1.5rem 2rem;
-  }
+  .project-body { padding: 1.5rem 2rem; }
 
   .project-phases {
     list-style: none;
@@ -432,6 +422,7 @@
   .project-links {
     display: flex;
     gap: 1rem;
+    flex-wrap: wrap;
   }
 
   .project-link {
@@ -453,7 +444,15 @@
     color: white;
   }
 
-  /* CONTACT */
+  .project-link.demo {
+    background: var(--primary);
+    color: white;
+  }
+
+  .project-link.demo:hover {
+    background: var(--primary-dark);
+  }
+
   .contact-section {
     background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     border-radius: 24px;
@@ -501,7 +500,6 @@
     transform: translateY(-2px);
   }
 
-  /* FOOTER */
   footer {
     text-align: center;
     padding: 2rem;
@@ -510,7 +508,6 @@
     border-top: 1px solid var(--border);
   }
 
-  /* RESPONSIVE */
   @media (max-width: 768px) {
     .about-grid { grid-template-columns: 1fr; }
     .nav-links { display: none; }
@@ -521,7 +518,6 @@
 </head>
 <body>
 
-<!-- NAV -->
 <nav>
   <div class="nav-logo">Aristide Maurel</div>
   <ul class="nav-links">
@@ -533,15 +529,14 @@
   <a href="https://github.com/MAUREL20245" target="_blank" class="btn-primary" style="padding: 8px 20px; font-size: 0.85rem;">GitHub</a>
 </nav>
 
-<!-- HERO -->
 <div class="hero">
   <div>
     <div class="hero-badge">
       <span></span>
       Disponible pour des missions
     </div>
-    <h1>Data Scientist &<br><span>MLOps Engineer</span></h1>
-    <p>Je construis des systèmes IA complets — du modèle ML à l'API en production, avec une approche MLOps moderne.</p>
+    <h1>Data Scientist &<br><span>AI Engineer</span></h1>
+    <p>Je construis des systèmes IA complets — du modèle ML à l'Agent IA en production, avec une approche MLOps moderne.</p>
     <div class="hero-cta">
       <a href="#projects" class="btn-primary">Voir mes projets →</a>
       <a href="#contact" class="btn-secondary">Me contacter</a>
@@ -557,13 +552,12 @@
       </div>
       <div class="stat">
         <span class="stat-number">AI</span>
-        <span class="stat-label">Engineer en formation</span>
+        <span class="stat-label">Engineer</span>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ABOUT -->
 <section id="about">
   <div class="about-grid">
     <div style="text-align: center;">
@@ -574,23 +568,22 @@
     <div class="about-info">
       <div class="section-tag">À propos</div>
       <h2 class="section-title">Construire l'IA<br>de demain</h2>
-      <p>Data Scientist et MLOps Engineer avec une solide formation en Statistiques Appliquées et Économétrie (UNISAT). Je travaille actuellement chez VEONE et je me spécialise dans la mise en production de systèmes IA.</p>
+      <p>Data Scientist et AI Engineer avec une solide formation en Statistiques Appliquées et Économétrie (UNISAT). Je travaille actuellement chez VEONE et je me spécialise dans la mise en production de systèmes IA.</p>
       <p>Mentor au Club D.I.A.M, je forme la prochaine génération d'AI Engineers en Côte d'Ivoire — en construisant des solutions réelles, pas juste des tutoriels.</p>
       <div class="about-tags">
         <span class="tag">Machine Learning</span>
         <span class="tag">MLOps</span>
-        <span class="tag">FastAPI</span>
-        <span class="tag">Docker</span>
-        <span class="tag">Python</span>
         <span class="tag">LLMs</span>
         <span class="tag">RAG</span>
         <span class="tag">Agent IA</span>
+        <span class="tag">FastAPI</span>
+        <span class="tag">Docker</span>
+        <span class="tag">Python</span>
       </div>
     </div>
   </div>
 </section>
 
-<!-- SKILLS -->
 <section id="skills" style="background: var(--bg-secondary); max-width: 100%; padding: 6rem 2rem;">
   <div style="max-width: 1100px; margin: 0 auto;">
     <div class="section-tag">Compétences</div>
@@ -601,14 +594,14 @@
       <div class="skill-card">
         <div class="skill-icon" style="background: #EEF0FF;">🤖</div>
         <h3>IA & LLMs</h3>
-        <p>Développement de systèmes IA modernes avec des LLMs open-source locaux.</p>
+        <p>Développement de systèmes IA modernes avec des LLMs locaux et cloud.</p>
         <div class="skill-items">
           <span class="skill-item">Ollama</span>
+          <span class="skill-item">Groq</span>
           <span class="skill-item">LangChain</span>
           <span class="skill-item">RAG</span>
           <span class="skill-item">Agents IA</span>
-          <span class="skill-item">ChromaDB</span>
-          <span class="skill-item">CLIP</span>
+          <span class="skill-item">Pinecone</span>
         </div>
       </div>
 
@@ -636,7 +629,7 @@
           <span class="skill-item">PostgreSQL</span>
           <span class="skill-item">MongoDB</span>
           <span class="skill-item">Redis</span>
-          <span class="skill-item">Uvicorn</span>
+          <span class="skill-item">Render</span>
         </div>
       </div>
 
@@ -658,39 +651,39 @@
   </div>
 </section>
 
-<!-- PROJECTS -->
 <section id="projects">
   <div class="section-tag">Projets</div>
   <h2 class="section-title">Ce que j'ai construit</h2>
   <p class="section-subtitle">Des projets concrets, de l'architecture à la production</p>
   <div class="projects-grid">
 
-    <!-- Projet 1 -->
+    <!-- Projet 1 — Agent IA Cloud -->
     <div class="project-card">
       <div class="project-header">
-        <div class="project-icon">🤖</div>
-        <h3>Chatbot IA Local — Club D.I.A.M</h3>
-        <p>Plateforme IA complète avec RAG, API REST et Agent IA autonome</p>
+        <div class="project-icon">🧠</div>
+        <h3>Agent IA Cloud — Club D.I.A.M</h3>
+        <p>Agent IA complet avec RAG, recherche web et déploiement cloud</p>
       </div>
       <div class="project-body">
         <ul class="project-phases">
           <li><span class="phase-check">✓</span>Chatbot local (Ollama + Python)</li>
-          <li><span class="phase-check">✓</span>Interface Streamlit</li>
-          <li><span class="phase-check">✓</span>Système RAG (LangChain + ChromaDB)</li>
+          <li><span class="phase-check">✓</span>Système RAG (LangChain + Pinecone)</li>
+          <li><span class="phase-check">✓</span>Agent IA ReAct from scratch</li>
           <li><span class="phase-check">✓</span>API REST (FastAPI)</li>
-          <li><span class="phase-check">✓</span>Agent IA (ReAct from scratch)</li>
           <li><span class="phase-check">✓</span>Dockerisation (5 microservices)</li>
+          <li><span class="phase-check">✓</span>Déployé sur le Cloud (Render + Groq)</li>
         </ul>
         <div class="project-stack">
           <span class="stack-badge">Ollama</span>
+          <span class="stack-badge">Groq</span>
+          <span class="stack-badge">Pinecone</span>
           <span class="stack-badge">LangChain</span>
-          <span class="stack-badge">FastAPI</span>
           <span class="stack-badge">Streamlit</span>
           <span class="stack-badge">Docker</span>
-          <span class="stack-badge">ChromaDB</span>
         </div>
         <div class="project-links">
-          <a href="https://github.com/MAUREL20245/chatbot-diam" target="_blank" class="project-link">GitHub →</a>
+          <a href="https://chatbot-diam-cloud.onrender.com" target="_blank" class="project-link demo">🌍 Demo Live →</a>
+          <a href="https://github.com/MAUREL20245/chatbot-diam-cloud" target="_blank" class="project-link">GitHub →</a>
         </div>
       </div>
     </div>
@@ -712,11 +705,10 @@
   </div>
 </section>
 
-<!-- CONTACT -->
 <section id="contact" style="padding-top: 0;">
   <div class="contact-section">
     <h2>Travaillons ensemble</h2>
-    <p>Data Scientist & MLOps Engineer disponible pour des missions, collaborations ou formations.</p>
+    <p>Data Scientist & AI Engineer disponible pour des missions, collaborations ou formations.</p>
     <div class="contact-links">
       <a href="https://github.com/MAUREL20245" target="_blank" class="contact-link">GitHub</a>
       <a href="mailto:maurelguepie150@gmail.com" class="contact-link">Email</a>
@@ -725,9 +717,8 @@
   </div>
 </section>
 
-<!-- FOOTER -->
 <footer>
-  <p>© 2026 GUEPIE Aristide Maurel — Data Scientist & MLOps Engineer — Abidjan, Côte d'Ivoire</p>
+  <p>© 2026 GUEPIE Aristide Maurel — Data Scientist & MLOps & AI Engineer — Abidjan, Côte d'Ivoire</p>
   <p style="margin-top: 0.5rem; font-size: 0.8rem;">Construit avec ❤️ pour le Club D.I.A.M</p>
 </footer>
 
