@@ -63,7 +63,8 @@ with st.sidebar:
                 with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
                     tmp.write(uploaded_file.read())
                     tmp_path = tmp.name
-                nb_chunks = rag.index_document(tmp_path)
+                # ── Fix : passer le vrai nom du fichier ──
+                nb_chunks = rag.index_document(tmp_path, original_name=uploaded_file.name)
                 os.unlink(tmp_path)
                 st.session_state.indexed_files.append(uploaded_file.name)
             st.success(f"✅ {uploaded_file.name} indexé ({nb_chunks} chunks)")
@@ -74,8 +75,10 @@ with st.sidebar:
             st.markdown(f"📄 {f}")
 
     st.divider()
+    # ── Fix : bouton Effacer complet ──
     if st.button("🗑️ Effacer", use_container_width=True):
         st.session_state.messages = []
+        st.session_state.indexed_files = []
         st.rerun()
 
 # ── Historique ────────────────────────────────────────────────────

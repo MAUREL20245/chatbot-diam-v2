@@ -62,8 +62,12 @@ class RAGSystem:
             raise ValueError("Format non supporté.")
         return loader.load()
 
-    def index_document(self, file_path: str) -> int:
+    def index_document(self, file_path: str, original_name: str = None) -> int:
         documents = self.load_document(file_path)
+        # ── Fix source name ──────────────────────────────────────
+        if original_name:
+            for doc in documents:
+                doc.metadata["source"] = original_name
         splitter = RecursiveCharacterTextSplitter(
             chunk_size=CONFIG["chunk_size"],
             chunk_overlap=CONFIG["chunk_overlap"]
@@ -89,7 +93,10 @@ class RAGSystem:
         response = self.groq_client.chat.completions.create(
             model=CONFIG["model"],
             messages=[
-                {"role": "system", "content": "Tu réponds uniquement en te basant sur le contexte fourni."},
+                {"role": "system", "content": """Tu es un assistant qui répond UNIQUEMENT en te basant sur le contexte fourni.
+- Commence TOUJOURS ta réponse par "D'après vos documents,"
+- Si l'information n'est pas dans le contexte, dis "Je ne trouve pas cette information dans vos documents."
+- Ne réponds JAMAIS depuis ta connaissance générale."""},
                 {"role": "user", "content": f"Contexte:\n{context}\n\nQuestion: {question}"}
             ]
         )

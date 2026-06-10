@@ -1,9 +1,19 @@
 from groq import Groq
 from langchain_community.tools import DuckDuckGoSearchRun
 from src.config import CONFIG
+from src.rag import RAGSystem
 from datetime import datetime
 import math
 import re
+
+# ── Instance RAG unique ───────────────────────────────────────────
+_rag_instance = None
+
+def get_rag() -> RAGSystem:
+    global _rag_instance
+    if _rag_instance is None:
+        _rag_instance = RAGSystem()
+    return _rag_instance
 
 # ── Outils ───────────────────────────────────────────────────────
 
@@ -19,10 +29,13 @@ def date_heure(query: str) -> str:
     return f"Nous sommes le {now.strftime('%A %d %B %Y')} à {now.strftime('%H:%M')}"
 
 def recherche_doc(question: str) -> str:
-    from src.rag import RAGSystem
-    rag = RAGSystem()
+    rag = get_rag()
     result = rag.ask(question)
-    return result["answer"]
+    answer = result["answer"]
+    sources = result.get("sources", [])
+    if sources:
+        answer += f"\n\n📎 Source : {', '.join(sources)}"
+    return answer
 
 search = DuckDuckGoSearchRun()
 
@@ -73,7 +86,6 @@ class AIAgent:
         self.model = CONFIG["model"]
 
     def _call_llm(self, prompt: str, stop: list = None) -> str:
-        """Appel au LLM via Groq"""
         kwargs = {
             "model": self.model,
             "messages": [{"role": "user", "content": prompt}],
@@ -81,7 +93,6 @@ class AIAgent:
         }
         if stop:
             kwargs["stop"] = stop
-
         response = self.client.chat.completions.create(**kwargs)
         return response.choices[0].message.content
 
@@ -105,11 +116,9 @@ class AIAgent:
                 tool_name = action_match.group(1).strip()
                 tool_input = input_match.group(1).strip().strip("'\"")
 
-                # Si l'input est vide ou inutile → utiliser la question originale
                 if not tool_input or "None" in tool_input or "je vais" in tool_input.lower():
                     tool_input = question
 
-                # Pour recherche_doc → toujours utiliser la question originale
                 if tool_name == "recherche_doc":
                     tool_input = question
 
@@ -123,7 +132,15 @@ class AIAgent:
 
                 prompt += f"\n{response}\nObservation: {observation}\nThought: J'ai le résultat, je formule la réponse finale.\nFinal Answer:"
                 final = self._call_llm(prompt)
-                return final.strip()
+                final = final.strip()
+
+                # ── Fix : conserver la source dans la Final Answer ──
+                if tool_name == "recherche_doc":
+                    source_lines = [l for l in observation.split("\n") if "📎 Source" in l]
+                    if source_lines and "📎 Source" not in final:
+                        final += "\n\n" + source_lines[0]
+
+                return final
             else:
                 return response
 
