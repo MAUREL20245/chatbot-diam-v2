@@ -56,6 +56,8 @@ TOOLS_DESCRIPTION = """
 REACT_PROMPT = """Tu es un assistant IA. Tu DOIS obligatoirement utiliser un outil avant de répondre.
 Tu réponds TOUJOURS en français.
 
+{history}
+
 Outils disponibles :
 {tools}
 
@@ -76,6 +78,7 @@ IMPORTANT :
 - Pour un calcul → utilise OBLIGATOIREMENT calculatrice
 - Pour une actualité → utilise OBLIGATOIREMENT recherche_web
 - Pour les documents → utilise OBLIGATOIREMENT recherche_doc avec LA QUESTION EXACTE de l'utilisateur comme Action Input
+- Si la question fait référence à la conversation précédente → utilise l'historique fourni
 
 Question : {question}
 """
@@ -96,9 +99,15 @@ class AIAgent:
         response = self.client.chat.completions.create(**kwargs)
         return response.choices[0].message.content
 
-    def run(self, question: str) -> str:
+    def run(self, question: str, session_id: str = "default") -> str:
+        from src.memory import format_history_for_prompt, add_message
+
+        # Récupérer l'historique
+        history = format_history_for_prompt(session_id)
+
         prompt = REACT_PROMPT.format(
             tools=TOOLS_DESCRIPTION,
+            history=history,
             question=question
         )
 
@@ -107,7 +116,11 @@ class AIAgent:
             print(f"\n--- Itération {i+1} ---\n{response}")
 
             if "Final Answer:" in response:
-                return response.split("Final Answer:")[-1].strip()
+                final = response.split("Final Answer:")[-1].strip()
+                # Sauvegarder dans la mémoire
+                add_message(session_id, "user", question)
+                add_message(session_id, "assistant", final)
+                return final
 
             action_match = re.search(r"Action:\s*(\w+)", response)
             input_match = re.search(r"Action Input:\s*(.+)", response)
@@ -134,12 +147,14 @@ class AIAgent:
                 final = self._call_llm(prompt)
                 final = final.strip()
 
-                # ── Fix : conserver la source dans la Final Answer ──
                 if tool_name == "recherche_doc":
                     source_lines = [l for l in observation.split("\n") if "📎 Source" in l]
                     if source_lines and "📎 Source" not in final:
                         final += "\n\n" + source_lines[0]
 
+                # Sauvegarder dans la mémoire
+                add_message(session_id, "user", question)
+                add_message(session_id, "assistant", final)
                 return final
             else:
                 return response
