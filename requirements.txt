@@ -14,3 +14,5 @@ python-dotenv
 pinecone-client
 langchain-pinecone
 upstash-redis
+beautifulsoup4
+lxml

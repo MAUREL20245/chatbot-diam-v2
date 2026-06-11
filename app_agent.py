@@ -2,6 +2,7 @@ import streamlit as st
 from src.agent import AIAgent
 import tempfile
 import os
+import uuid
 
 # ── Configuration ─────────────────────────────────────────────────
 st.set_page_config(
@@ -10,8 +11,8 @@ st.set_page_config(
     layout="centered"
 )
 
-st.title("🧠 Agent IA — Club D.I.A.M")
-st.caption("Un agent capable de raisonner et d'utiliser des outils — Propulsé par Groq")
+st.title("🧠 Agent IA v2 — Club D.I.A.M")
+st.caption("Agent avec mémoire persistante — Propulsé par Groq + Redis")
 
 # ── Initialisation ────────────────────────────────────────────────
 if "agent" not in st.session_state:
@@ -24,6 +25,13 @@ if "messages" not in st.session_state:
 if "indexed_files" not in st.session_state:
     st.session_state.indexed_files = []
 
+if "session_id" not in st.session_state:
+    session_id = st.query_params.get("sid", None)
+    if not session_id:
+        session_id = str(uuid.uuid4())[:8]
+        st.query_params["sid"] = session_id
+    st.session_state.session_id = session_id
+
 # ── Sidebar ───────────────────────────────────────────────────────
 with st.sidebar:
     st.header("🔧 Outils disponibles")
@@ -34,6 +42,7 @@ with st.sidebar:
     | 🕐 date_heure | Date et heure actuelle |
     | 🌐 recherche_web | Chercher sur internet |
     | 📄 recherche_doc | Chercher dans les PDFs |
+    | 🔗 lire_url | Lire une page web |
     """)
 
     st.divider()
@@ -43,6 +52,8 @@ with st.sidebar:
     - *Calcule 15% de 85000*
     - *Quelles sont les dernières nouvelles IA ?*
     - *Quels sont les modules B2 dans mes documents ?*
+    - *Lis cette page : https://...*
+    - *Comment je m'appelle ?*
     """)
 
     st.divider()
@@ -63,7 +74,6 @@ with st.sidebar:
                 with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
                     tmp.write(uploaded_file.read())
                     tmp_path = tmp.name
-                # ── Fix : passer le vrai nom du fichier ──
                 nb_chunks = rag.index_document(tmp_path, original_name=uploaded_file.name)
                 os.unlink(tmp_path)
                 st.session_state.indexed_files.append(uploaded_file.name)
@@ -75,8 +85,9 @@ with st.sidebar:
             st.markdown(f"📄 {f}")
 
     st.divider()
-    # ── Fix : bouton Effacer complet ──
     if st.button("🗑️ Effacer", use_container_width=True):
+        from src.memory import clear_history
+        clear_history(st.session_state.session_id)
         st.session_state.messages = []
         st.session_state.indexed_files = []
         st.rerun()
@@ -99,7 +110,10 @@ if prompt := st.chat_input("Pose une question à l'agent..."):
 
     with st.chat_message("assistant"):
         with st.spinner("L'agent réfléchit et agit..."):
-            response = st.session_state.agent.run(prompt)
+            response = st.session_state.agent.run(
+                prompt,
+                session_id=st.session_state.session_id
+            )
 
         if "Final Answer:" in response:
             clean_response = response.split("Final Answer:")[-1].strip()

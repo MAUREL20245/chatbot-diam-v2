@@ -64,7 +64,6 @@ class RAGSystem:
 
     def index_document(self, file_path: str, original_name: str = None) -> int:
         documents = self.load_document(file_path)
-        # ── Fix source name ──────────────────────────────────────
         if original_name:
             for doc in documents:
                 doc.metadata["source"] = original_name
@@ -93,11 +92,17 @@ class RAGSystem:
         response = self.groq_client.chat.completions.create(
             model=CONFIG["model"],
             messages=[
-                {"role": "system", "content": """Tu es un assistant qui répond UNIQUEMENT en te basant sur le contexte fourni.
-- Commence TOUJOURS ta réponse par "D'après vos documents,"
-- Si l'information n'est pas dans le contexte, dis "Je ne trouve pas cette information dans vos documents."
-- Ne réponds JAMAIS depuis ta connaissance générale."""},
-                {"role": "user", "content": f"Contexte:\n{context}\n\nQuestion: {question}"}
+                {"role": "system", "content": """Tu es un assistant expert en analyse de documents.
+Réponds de manière PRÉCISE et DÉTAILLÉE en te basant UNIQUEMENT sur le contexte fourni.
+
+RÈGLES STRICTES :
+- Cite les informations EXACTES du document — pas de paraphrase vague
+- Utilise les termes précis du document
+- Ne dis JAMAIS "semble être" ou "pourrait être" — sois affirmatif
+- Si l'info n'est pas dans le contexte → dis clairement "Je ne trouve pas cette information dans vos documents"
+- Ne réponds JAMAIS depuis ta connaissance générale
+- Structure ta réponse avec des points clairs si nécessaire"""},
+                {"role": "user", "content": f"Contexte extrait du document :\n{context}\n\nQuestion : {question}\n\nRéponds de manière précise et détaillée en te basant uniquement sur le contexte ci-dessus."}
             ]
         )
 

@@ -28,6 +28,10 @@ def date_heure(query: str) -> str:
     now = datetime.now()
     return f"Nous sommes le {now.strftime('%A %d %B %Y')} à {now.strftime('%H:%M')}"
 
+def memoriser(info: str) -> str:
+    """Mémorise une information personnelle sur l'utilisateur"""
+    return f"✅ Information mémorisée : {info}"
+
 def recherche_doc(question: str) -> str:
     rag = get_rag()
     result = rag.ask(question)
@@ -37,23 +41,39 @@ def recherche_doc(question: str) -> str:
         answer += f"\n\n📎 Source : {', '.join(sources)}"
     return answer
 
+def lire_url(url: str) -> str:
+    try:
+        from langchain_community.document_loaders import WebBaseLoader
+        loader = WebBaseLoader(url)
+        docs = loader.load()
+        if not docs:
+            return "Impossible de lire cette URL."
+        contenu = docs[0].page_content[:3000]
+        return f"Contenu de {url} :\n\n{contenu}"
+    except Exception as e:
+        return f"Erreur lors de la lecture de l'URL : {str(e)}"
+
 search = DuckDuckGoSearchRun()
 
 TOOLS = {
     "calculatrice": calculatrice,
     "date_heure": date_heure,
+    "memoriser": memoriser,
     "recherche_web": search.run,
     "recherche_doc": recherche_doc,
+    "lire_url": lire_url,
 }
 
 TOOLS_DESCRIPTION = """
 - calculatrice : faire des calculs. Ex: '2 + 2', 'sqrt(16)', '15 * 85000 / 100'
 - date_heure : connaître la date et l'heure actuelle
+- memoriser : mémoriser une info personnelle sur l'utilisateur. Ex: nom, prénom, entreprise, projet
 - recherche_web : chercher des infos récentes sur internet
 - recherche_doc : chercher dans les documents PDF indexés
+- lire_url : lire et résumer le contenu d'une page web. Ex: 'https://example.com'
 """
 
-REACT_PROMPT = """Tu es un assistant IA. Tu DOIS obligatoirement utiliser un outil avant de répondre.
+REACT_PROMPT = """Tu es un assistant IA intelligent et précis.
 Tu réponds TOUJOURS en français.
 
 {history}
@@ -61,8 +81,7 @@ Tu réponds TOUJOURS en français.
 Outils disponibles :
 {tools}
 
-RÈGLE ABSOLUE : Tu ne peux JAMAIS répondre directement sans passer par un outil.
-Même si tu penses connaître la réponse, tu DOIS utiliser l'outil correspondant.
+RÈGLE ABSOLUE : Tu DOIS obligatoirement utiliser un outil avant de répondre.
 
 Format OBLIGATOIRE à respecter :
 
@@ -73,12 +92,14 @@ Observation: [le système mettra le résultat ici]
 Thought: j'ai le résultat
 Final Answer: ta réponse en français
 
-IMPORTANT :
+IMPORTANT — Choix de l'outil :
+- "Je m'appelle X" / "Mon nom est X" / info personnelle → utilise OBLIGATOIREMENT memoriser
+- Question sur l'utilisateur (nom, entreprise...) → vérifie D'ABORD l'historique, réponds directement
 - Pour l'heure ou la date → utilise OBLIGATOIREMENT date_heure
 - Pour un calcul → utilise OBLIGATOIREMENT calculatrice
-- Pour une actualité → utilise OBLIGATOIREMENT recherche_web
-- Pour les documents → utilise OBLIGATOIREMENT recherche_doc avec LA QUESTION EXACTE de l'utilisateur comme Action Input
-- Si la question fait référence à la conversation précédente → utilise l'historique fourni
+- Pour une actualité/news → utilise OBLIGATOIREMENT recherche_web
+- Pour les documents PDF → utilise OBLIGATOIREMENT recherche_doc avec LA QUESTION EXACTE
+- Pour lire une URL → utilise OBLIGATOIREMENT lire_url avec l'URL exacte
 
 Question : {question}
 """
@@ -102,7 +123,6 @@ class AIAgent:
     def run(self, question: str, session_id: str = "default") -> str:
         from src.memory import format_history_for_prompt, add_message
 
-        # Récupérer l'historique
         history = format_history_for_prompt(session_id)
 
         prompt = REACT_PROMPT.format(
@@ -117,7 +137,9 @@ class AIAgent:
 
             if "Final Answer:" in response:
                 final = response.split("Final Answer:")[-1].strip()
-                # Sauvegarder dans la mémoire
+                # Supprimer source si réponse depuis mémoire
+                if "📎 Source" in final:
+                    final = final.split("📎 Source")[0].strip()
                 add_message(session_id, "user", question)
                 add_message(session_id, "assistant", final)
                 return final
@@ -147,12 +169,17 @@ class AIAgent:
                 final = self._call_llm(prompt)
                 final = final.strip()
 
+                # Source uniquement pour recherche_doc
                 if tool_name == "recherche_doc":
                     source_lines = [l for l in observation.split("\n") if "📎 Source" in l]
                     if source_lines and "📎 Source" not in final:
                         final += "\n\n" + source_lines[0]
 
-                # Sauvegarder dans la mémoire
+                # Pas de source pour memoriser et autres outils
+                if tool_name in ["memoriser", "date_heure", "calculatrice", "recherche_web", "lire_url"]:
+                    if "📎 Source" in final:
+                        final = final.split("📎 Source")[0].strip()
+
                 add_message(session_id, "user", question)
                 add_message(session_id, "assistant", final)
                 return final
