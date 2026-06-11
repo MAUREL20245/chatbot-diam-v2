@@ -6,12 +6,154 @@ import uuid
 
 # ── Configuration ─────────────────────────────────────────────────
 st.set_page_config(
-    page_title="Agent IA — Club D.I.A.M",
+    page_title="Agent AYNID",
     page_icon="🤖",
-    layout="centered"
+    layout="wide"
 )
 
-st.title("🧠 Agent IA v2 — Club D.I.A.M")
+# ── Thème WhatsApp ─────────────────────────────────────────────────
+st.markdown("""
+<style>
+
+/* Fond général blanc */
+.stApp {
+    background-color: #FFFFFF;
+}
+
+/* Sidebar fond blanc, bordure verte */
+[data-testid="stSidebar"] {
+    background-color: #FFFFFF;
+    border-right: 3px solid #25D366;
+}
+
+/* Texte sidebar VISIBLE en noir */
+[data-testid="stSidebar"] * {
+    color: #111B21 !important;
+}
+
+/* Barre du bas — propre, fond blanc */
+.stBottom {
+    bottom: 20px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 70% !important;
+    border-radius: 35px !important;
+    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3) !important;
+}
+
+.stBottom, .stBottom > div, .stBottom > div > div {
+    background-color: #FFFFFF !important;
+    border: 2px solid #25D366 !important;
+    border-radius: 35px !important;
+}
+
+/* Espace suffisant pour que le chat ne se cache pas */
+.main .block-container {
+    padding-bottom: 120px !important;
+}
+
+/* Container du champ de saisie */
+[data-testid="stChatInput"] {
+    background-color: #FFFFFF !important;
+    border-radius: 30px !important;
+}
+
+/* Champ de saisie */
+[data-testid="stChatInput"] textarea {
+    background-color: #F0FFF4 !important;
+    color: #111B21 !important;
+    border: 2px solid #25D366 !important;
+    border-radius: 25px !important;
+    min-height: 50px !important;
+    padding: 12px 20px !important;
+    font-size: 15px !important;
+}
+
+/* Bouton envoi vert */
+[data-testid="stChatInputSubmitButton"] {
+    background-color: #25D366 !important;
+    border-radius: 50% !important;
+}
+
+/* Titres en vert + plus grand */
+h1 {
+    color: #128C7E !important;
+    font-size: 3rem !important;
+    font-weight: 700 !important;
+}
+
+h2, h3 {
+    color: #128C7E !important;
+}
+
+/* Zone chat fond légèrement vert clair */
+[data-testid="stChatMessageContainer"] {
+    background-color: #F9FFF9;
+}
+
+/* Texte des messages visible en noir */
+[data-testid="stChatMessage"] p,
+[data-testid="stChatMessage"] span,
+[data-testid="stChatMessage"] li,
+[data-testid="stMarkdownContainer"] p,
+[data-testid="stMarkdownContainer"] span {
+    color: #111B21 !important;
+}
+
+/* Bulle utilisateur — vert clair */
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
+    background-color: #DCF8C6 !important;
+    border-radius: 12px !important;
+    padding: 10px 16px !important;
+}
+
+/* Bulle agent — blanc avec bordure verte */
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarAssistant"]) {
+    background-color: #FFFFFF !important;
+    border: 1px solid #25D366 !important;
+    border-radius: 12px !important;
+    padding: 10px 16px !important;
+}
+
+/* Zone upload - fond vert clair avec bordure verte pointillée */
+[data-testid="stFileUploader"] {
+    background-color: #F0FFF4 !important;
+    border: 2px dashed #25D366 !important;
+    border-radius: 12px !important;
+    padding: 10px !important;
+}
+
+/* Texte dans la zone upload */
+[data-testid="stFileUploader"] * {
+    color: #128C7E !important;
+}
+
+/* Bouton Télécharger en vert */
+[data-testid="stFileUploader"] button {
+    background-color: #25D366 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 20px !important;
+}
+
+/* Bouton Effacer en vert */
+[data-testid="stSidebar"] .stButton button {
+    background-color: #25D366 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 20px !important;
+    font-weight: bold !important;
+}
+
+/* Hover bouton */
+[data-testid="stSidebar"] .stButton button:hover {
+    background-color: #128C7E !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+st.title("🧠 Agent AYNID")
 st.caption("Agent avec mémoire persistante — Propulsé par Groq + Redis")
 
 # ── Initialisation ────────────────────────────────────────────────
@@ -51,7 +193,6 @@ with st.sidebar:
     - *Quelle heure est-il ?*
     - *Calcule 15% de 85000*
     - *Quelles sont les dernières nouvelles IA ?*
-    - *Quels sont les modules B2 dans mes documents ?*
     - *Lis cette page : https://...*
     - *Comment je m'appelle ?*
     """)
